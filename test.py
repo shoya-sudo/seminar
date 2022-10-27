@@ -5,7 +5,7 @@ from playsound import playsound
 
 #ここのピン番号はBCMならGPIOxのx番, BOARDならピン番号1~40で指定可
 pin_in = 20 #レーザー判定用, 接続箇所により要変更
-pin_out = 21 #スピーカー出力用, 接続箇所により要変更
+pin_out = 19 #スピーカー出力用, 接続箇所により要変更
 piano = "piano_" #ファイル指定用
 wav = ".wav" #ファイル指定用
 tmp_file = "" #再生する音のファイルをpianoと番号で指定
@@ -33,11 +33,11 @@ while True:
 		if GPIO.input(pin_in) == 1:
 			print("1")
 			GPIO.output(pin_out, GPIO.HIGH)
-			playsound(tmp_file)
+			#playsound(tmp_file)
 		else:
 			print("0")
 			GPIO.output(pin_out, GPIO.LOW)
-		time.sleep(0.3)
+		time.sleep(0.05)
 	except KeyboardInterrupt:
 		GPIO.cleanup()
 		sys.exit()
