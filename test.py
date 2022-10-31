@@ -31,7 +31,7 @@ def thread_test(): #スレッドの動作テスト用, 横通信のスレッド�
 
 while True:
 	try:
-		pool.submit(thread_test)　#プールにスレッドの関数を渡す
+		pool.submit(thread_test) #プールにスレッドの関数を渡す
 		tmp_file = piano + str(id.value) + wav #wavファイルをidにて指定
 		#print(tmp_file)
 		if GPIO.input(pin_in) == 1: #レーザーを遮ったとき
@@ -43,7 +43,7 @@ while True:
 		else: #レーザーが照射されているとき
 			print("0")
 			flag = 0 #遮ったら音がなる
-		time.sleep(0.05)
+		time.sleep(0.4)
 	except KeyboardInterrupt:
 		GPIO.cleanup()
 		sys.exit()
