@@ -21,8 +21,8 @@ GPIO.setup(pin_in, GPIO.IN)
 
 #場合によっては入力ピンが浮いている状態を回避する必要がある
 #->プルアップ/プルダウン抵抗を指定する必要がある(浮いてるときにON/OFF)
-#GPIO.setup(pin_in, GPIO.IN, pull_up_down = GPIO.PUD_UP)
-GPIO.setup(pin_in, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+GPIO.setup(pin_in, GPIO.IN, pull_up_down = GPIO.PUD_UP)
+# GPIO.setup(pin_in, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
 
 def thread_test(): #スレッドの動作テスト用, 横通信のスレッドに置き換える箇所, スレッドプールの機能により、ここでのtime.sleepの長さでidの振り分け間隔を決めることが可能
     print(id.value)
@@ -39,7 +39,7 @@ while True:
 			if flag == 0: #前回の判定のときにレーザーが遮られていないとき鳴らす
 				wav_obj = simpleaudio.WaveObject.from_wave_file(tmp_file)
 				wav_obj.play()
-			flag = 1 #これにより、今回鳴らしたことを次回以降で参照可能
+			flag = 0 #これにより、今回鳴らしたことを次回以降で参照可能
 		else: #レーザーが照射されているとき
 			print("0")
 			flag = 0 #遮ったら音がなる
