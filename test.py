@@ -26,7 +26,7 @@ GPIO.setup(pin_in, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 
 def thread_test(): #スレッドの動作テスト用, 横通信のスレッドに置き換える箇所, スレッドプールの機能により、ここでのtime.sleepの長さでidの振り分け間隔を決めることが可能
     print(id.value)
-    id.value += 1
+    id.value += 0
     time.sleep(5)
 
 while True:
@@ -43,7 +43,7 @@ while True:
 		else: #レーザーが照射されているとき
 			print("0")
 			flag = 0 #遮ったら音がなる
-		time.sleep(0.4)
+		time.sleep(0.39)
 	except KeyboardInterrupt:
 		GPIO.cleanup()
 		sys.exit()
