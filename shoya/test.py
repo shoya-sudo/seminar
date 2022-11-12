@@ -27,15 +27,15 @@ GPIO.setup(pin_in, GPIO.IN)
 GPIO.setup(pin_in, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 # GPIO.setup(pin_in, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
 
-tmp_file = piano + str(id.value) + wav
-pygame.mixer.init()
-pygame.mixer.music.load(tmp_file)
-pygame.mixer.music.play()
+#tmp_file = piano + str(id.value) + wav
+#pygame.mixer.init()
+#pygame.mixer.music.load(tmp_file)
+#pygame.mixer.music.play()
 
 def thread_test(): #スレッドの動作テスト用, 横通信のスレッドに置き換える箇所, スレッドプールの機能により、ここでのtime.sleepの長さでidの振り分け間隔を決めることが可能
     print("id.value: " + str(id.value) + " -> ",end='')
     id.value += 1
-    if id.value == 8:
+    if id.value >= 8:
         id.value = 1
     print(id.value)
     time.sleep(3)
@@ -47,9 +47,10 @@ while True:
 		#print(tmp_file)
 		if GPIO.input(pin_in) == 1: #レーザーを遮ったとき
 			print("1")
-			#if flag == 0: #前回の判定のときにレーザーが遮られていないとき鳴らす
-				#wav_obj = simpleaudio.WaveObject.from_wave_file(tmp_file)
-				#wav_obj.play()
+			if flag == 0: #前回の判定のときにレーザーが遮られていないとき鳴らす
+				wav_obj = simpleaudio.WaveObject.from_wave_file(tmp_file)
+				simpleaudio.stop_all()# 再生中の音源をすべて停止する
+				wav_obj.play()
 				#del wav_obj
 				#gc.collect()
 				#pygame.mixer.music.stop()
@@ -58,7 +59,7 @@ while True:
 		else: #レーザーが照射されているとき
 			print("0")
 			flag = 0 #遮ったら音がなる
-		time.sleep(1)
+		time.sleep(0.1)
 	except KeyboardInterrupt:
 		GPIO.cleanup()
 		sys.exit()

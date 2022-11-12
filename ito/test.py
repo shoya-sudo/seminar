@@ -45,10 +45,11 @@ while True:
 		if GPIO.input(pin_in) == 0: #レーザーを遮ったとき
 			#print("0")
 			if flag == 0: #前回の判定のときにレーザーが遮られていないとき鳴らす
-				if threading.active_count() == 8:
-					pool2.shutdown(wait = False)
-					pool2 = ThreadPoolExecutor(max_workers = 8)
-				pool2.submit(thread_test) #プールにスレッドの関数を渡す
+				if threading.active_count() == 9:
+					pool.cancel()
+					#pool2.shutdown(wait = False)
+					#pool2 = ThreadPoolExecutor(max_workers = 8)
+				pool.submit(thread_test) #プールにスレッドの関数を渡す
 			flag = 0 #これにより、今回鳴らしたことを次回以降で参照可能
 		else: #レーザーが照射されているとき
 			#print("1")
