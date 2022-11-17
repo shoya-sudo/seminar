@@ -9,7 +9,7 @@ import pygame.mixer
 import gc
 
 #ここのピン番号はBCMならGPIOxのx番, BOARDならピン番号1~40で指定可
-las_in = 29 #レーザー判定用, 接続箇所により要変更
+pin_in = 29 #レーザー判定用, 接続箇所により要変更
 piano = "piano/" #ファイル指定用
 wav = ".wav" #ファイル指定用
 extension = ".mp3" #ファイル指定用
@@ -18,18 +18,24 @@ id = Value('i', 0) #自分のid, 接続順により変化 スレッド内でも�
 key = 0 #他の鍵盤の情報を受け取る
 flag = 0 #レーザーを遮り続けたときに、音を鳴らし続けないように(レーザーを断続的に遮ったときのみ音がなる)
 pool = ThreadPoolExecutor(max_workers=1) #スレッドプールを1にすることで、while文に組み込んでも1つのスレッドまでしか動かない(2にして送信と受信両方のスレッドを動かすかも)
+cnt = 0 #遮り続けたときの判定用
 s_num = 15 #単体のときのファイル指定番号
 time_sta = 0
 time_end = 0
 tim = 0
 
 GPIO.setmode(GPIO.BOARD)
-GPIO.setup(las_in, GPIO.IN)
+GPIO.setup(pin_in, GPIO.IN)
 
 #場合によっては入力ピンが浮いている状態を回避する必要がある
 #->プルアップ/プルダウン抵抗を指定する必要がある(浮いてるときにON/OFF)
-#GPIO.setup(las_in, GPIO.IN, pull_up_down = GPIO.PUD_UP)
-GPIO.setup(las_in, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+#GPIO.setup(pin_in, GPIO.IN, pull_up_down = GPIO.PUD_UP)
+GPIO.setup(pin_in, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+
+#tmp_file = piano + str(id.value) + wav
+#pygame.mixer.init()
+#pygame.mixer.music.load(tmp_file)
+#pygame.mixer.music.play()
 
 def thread_test(): #スレッドの動作テスト用, 横通信のスレッドに置き換える箇所, スレッドプールの機能により、ここでのtime.sleepの長さでidの振り分け間隔を決めることが可能
     print("id.value: " + str(id.value) + " -> ",end='')
@@ -42,7 +48,7 @@ def thread_test(): #スレッドの動作テスト用, 横通信のスレッド�
 while True:
 	try:
 		#pool.submit(thread_test) #プールにスレッドの関数を渡す
-		if GPIO.input(las_in) == 0: #レーザーを遮ったとき
+		if GPIO.input(pin_in) == 0: #レーザーを遮ったとき
 			print("0")
 			if flag == 0: #前回の判定のときにレーザーが遮られていないとき鳴らす
 				if id.value == 0: #idが0のとき(単体動作のとき)のファイル指定
@@ -52,12 +58,22 @@ while True:
 				wav_obj = simpleaudio.WaveObject.from_wave_file(tmp_file)
 				simpleaudio.stop_all()# 再生中の音源をすべて停止する
 				wav_obj.play()
+				#del wav_obj
+				#gc.collect()
+				#pygame.mixer.music.stop()
 			flag = 1 #これにより、今回鳴らしたことを次回以降で参照可能
 			if time_sta == 0:
 				time_sta = time.perf_counter()
+			#cnt += 1 #遮り続けたかの判定用, 音声ファイルが切り替わったあとは一回離さないともう一度切り替えられない
+			#if id.value == 0 and cnt == 58: #cnt==28は処理時間含めたときに約3秒にするため
+				#s_num += 1 #ファイル番号を1つ進める
+				#cnt = 0 #デバック用
+				#if s_num == 19: #最大ファイル数によって変動, この値はファイル数+1
+					#s_num = 15 #初期化
 		else: #レーザーが照射されているとき
 			print("1")
 			flag = 0 #遮ったら音がなる
+			#cnt = 0 #ファイル変更可能に
 			if time_sta != 0:
 				time_end = time.perf_counter()
 				tim = time_end - time_sta
@@ -66,6 +82,7 @@ while True:
 					if s_num == 19:
 						s_num = 15
 			time_sta = 0
+		#time.sleep(0.05)
 	except KeyboardInterrupt:
 		GPIO.cleanup()
 		sys.exit()
