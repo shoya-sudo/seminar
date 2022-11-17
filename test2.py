@@ -7,7 +7,7 @@ from concurrent.futures import ProcessPoolExecutor
 #import simpleaudio #初回実行前にコマンドプロンプトにて"pip install simpleaudio"を実行する
 
 #ここのピン番号はBCMならGPIOxのx番, BOARDならピン番号1~40で指定可
-pin_in = 29 #レーザー判定用, 接続箇所により要変更
+Laser_in = 29 #レーザー判定用, 接続箇所により要変更
 pin_Rin = 38
 pin_Lin = 35
 pin_Rout = 36
@@ -22,21 +22,29 @@ flag = 0 #レーザーを遮り続けたときに、音を鳴らし続けない�
 Rlist = []
 Llist = []
 rate = 0.05
-pool = ProcessPoolExecutor(max_workers=1) #スレッドプールを1にすることで、while文に組み込んでも1つのスレッドまでしか動かない(2にして送信と受信両方のスレッドを動かすかも)
+Rpool = ProcessPoolExecutor(max_workers=1) #スレッドプールを1にすることで、while文に組み込んでも1つのスレッドまでしか動かない(2にして送信と受信両方のスレッドを動かすかも)
+Lpool = ProcessPoolExecutor(max_workers=1)
+
 
 GPIO.setmode(GPIO.BOARD)
-GPIO.setup(pin_in, GPIO.IN)
-
+GPIO.setup(Laser_in, GPIO.IN)
+GPIO.setup(pin_Rin, GPIO.IN)
+GPIO.setup(pin_Lin, GPIO.IN)
+GPIO.setup(pin_Rout, GPIO.OUT)
+GPIO.setup(pin_Lout, GPIO.OUT)
 #場合によっては入力ピンが浮いている状態を回避する必要がある
 #->プルアップ/プルダウン抵抗を指定する必要がある(浮いてるときにON/OFF)
 #GPIO.setup(pin_in, GPIO.IN, pull_up_down = GPIO.PUD_UP)
-GPIO.setup(pin_in, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+GPIO.setup(Laser_in, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+GPIO.setup(pin_Rin, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+GPIO.setup(pin_Lin, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
 
 def receiveData(pin_in, list):
 	id = -1
 	count = 0
-	list.appent(GPIO.input(pin_in))
-	
+	#print(pin_in)
+	#print(GPIO.input(pin_in))
+	list.append(GPIO.input(pin_in))
 	while len(list) > 10:
 		list.pop(0)
 		
@@ -49,7 +57,7 @@ def receiveData(pin_in, list):
 	if list[0] == 0 and count >= 4 and list[11] == 0 and len(list) >= 10:
 		id = list[8] + list[7] * 2 + list[6] * 4 + list[5] * 8
 			
-#	time.sleep(rate)
+	time.sleep(rate)
 	return id #種類とidを返す
 
 def sendID(id): #input id (1-15)
@@ -90,7 +98,6 @@ def sendID(id): #input id (1-15)
 def Rrecive():
     while True:
         try:
-            print("Rtry")
             Rresult = receiveData(pin_Rin,Rlist)
             if Rresult != -1:
                 Rid.value = Rresult
@@ -101,7 +108,6 @@ def Rrecive():
 def Lrecive():
     while True:
         try:
-            print("Ltry")
             Lresult = receiveData(pin_Lin,Llist)
             if Lresult != -1:
                 Lid.value = Lresult
@@ -110,16 +116,18 @@ def Lrecive():
             sys.exit()
 
 
-
-pool.submit(Rrecive)
-pool.submit(Lrecive)
+#print("submit")
+#pool.submit(Rrecive)
+#pool.submit(Lrecive)
 
 while True:
 	try:
-		pool.submit(sendID,1) #プールにスレッドの関数を渡す
+		Rpool.submit(Rrecive)
+		Lpool.submit(Lrecive)
+		#pool.submit(sendID,1) #プールにスレッドの関数を渡す
 		tmp_file = piano + str(Rid.value) + wav #wavファイルをidにて指定
 		#print(tmp_file)
-		if GPIO.input(pin_in) == 1: #レーザーを遮ったとき
+		if GPIO.input(Laser_in) == 1: #レーザーを遮ったとき
 			#print("1")
 			if flag == 0: #前回の判定のときにレーザーが遮られていないとき鳴らす
 				wav_obj = simpleaudio.WaveObject.from_wave_file(tmp_file)
