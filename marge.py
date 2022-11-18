@@ -61,7 +61,7 @@ def receiveData(pin_in, list):
 		id = list[8] + list[7] * 2 + list[6] * 4 + list[5] * 8
 
 	time.sleep(rate)
-	return id #種類とidを返す
+	return id #idを返す
 
 #ID or 台数をpin_outに出力する
 def sendID(pin_out, id): #input id (1-15)
