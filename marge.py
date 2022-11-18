@@ -16,8 +16,8 @@ pin_Lout = 37
 piano = "piano/" #ファイル指定用
 wav = ".wav" #ファイル指定用
 tmp_file = "" #再生する音のファイルをpianoと番号で指定
-id = Value('i', 0) #自分のid, 接続順により変化 スレッド内でも共通の変数なため、スレッド内の変更が大本のwhile文にも影響する
-key = 0 #鍵盤数の情報を受け取る
+id = Value('i', 1) #自分のid, 接続順により変化 スレッド内でも共通の変数なため、スレッド内の変更が大本のwhile文にも影響する
+Rid = value('i', 1) #鍵盤数の情報を受け取る
 flag = 0 #レーザーを遮り続けたときに、音を鳴らし続けないように(レーザーを断続的に遮ったときのみ音がなる)
 pool = ProcessPoolExecutor(max_workers=2) #スレッドプールを1にすることで、while文に組み込んでも1つのスレッドまでしか動かない(2にして送信と受信両方のスレッドを動かすかも)
 s_num = 15 #単体のときのファイル指定番号
@@ -42,6 +42,7 @@ GPIO.setup(las_in, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
 GPIO.setup(pin_Rin, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
 GPIO.setup(pin_Lin, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
 
+#pin_inからの値をlistに格納し、IDを算出して返す
 def receiveData(pin_in, list):
 	id = -1
 	count = 0
@@ -63,7 +64,8 @@ def receiveData(pin_in, list):
 	time.sleep(rate)
 	return id #種類とidを返す
 
-def sendID(id): #input id (1-15)
+#ID or 台数をpin_outに出力する
+def sendID(pin_out, id): #input id (1-15)
     t=16
     i=id
     c=0
@@ -106,12 +108,13 @@ def Rreceive():
             Rresult = receiveData(pin_Rin,Rlist)
             if Rresult != -1:
                 Rid.value = Rresult
-				sendId(Rresult) #台数を左へ流す
+				sendId(pin_Lout, Rresult - 1) #台数を左(Lout)へ流す(sendIDは+1されるので先に減らして渡す)
 				t_sta = time.perf_counter()
-			else:
+			else: #一番右の時
 				time = time.perf_counter() - t_sta
 				if time > 5:
-					sendID(1) #台数を左へ流す
+					Rid.Value = id.Value
+					sendID(pin_Lout, id.Value - 1) #台数を左へ流す
         except KeyboardInterrupt:
             GPIO.cleanup()
             sys.exit()
@@ -124,12 +127,13 @@ def Lreceive():
             Lresult = receiveData(pin_Lin,Llist)
             if Lresult != -1:
                 id.value = Lresult
-				sendId(Lresult)
+				sendId(pin_Rout, Lresult) #右へIDを伝える
 				t_sta = time.perf_counter()
-			else:
+			else: #一番左の時
 				time = time.perf_counter() - t_sta
 				if time > 5:
-					sendID(1)
+					id.Value = 1
+					sendID(pin_Rout, id.Value)
         except KeyboardInterrupt:
             GPIO.cleanup()
             sys.exit()
@@ -142,7 +146,7 @@ while True:
 		if GPIO.input(las_in) == 0: #レーザーを遮ったとき
 			print("0")
 			if flag == 0: #前回の判定のときにレーザーが遮られていないとき鳴らす
-				if id.value == 0: #idが0のとき(単体動作のとき)のファイル指定
+				if Rid.value == 1: #接続された台数が1台のとき(単体動作のとき)のファイル指定
 					tmp_file = piano + str(s_num) + wav
 				else: #複数のときのファイル指定
 					tmp_file = piano + str(id.value) + wav #wavファイルをidにて指定
