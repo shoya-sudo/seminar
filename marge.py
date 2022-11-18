@@ -1,7 +1,7 @@
 import RPi.GPIO as GPIO
 import time
 import sys
-import threading
+#import threading
 from multiprocessing import Value
 from concurrent.futures import ProcessPoolExecutor
 import simpleaudio #初回実行前にコマンドプロンプトにて"pip install simpleaudio"を実行する
@@ -106,13 +106,13 @@ def Rreceive():
 			Rresult = receiveData(pin_Rin,Rlist)
 			if Rresult != -1:
 				Rid.value = Rresult
-				sendId(pin_Lout, Rresult - 1) #台数を左(Lout)へ流す(sendIDは+1されるので先に減らして渡す)
+				sendID(pin_Lout, Rresult - 1) #台数を左(Lout)へ流す(sendIDは+1されるので先に減らして渡す)
 				t_sta = time.perf_counter()
 			else: #一番右の時
 				time = time.perf_counter() - t_sta
 				if time > 5:
-					Rid.Value = id.Value
-					sendID(pin_Lout, id.Value - 1) #台数を左へ流す
+					Rid.value = id.value
+					sendID(pin_Lout, id.value - 1) #台数を左へ流す
 		except KeyboardInterrupt:
 			GPIO.cleanup()
 			sys.exit()
@@ -125,13 +125,13 @@ def Lreceive():
 			Lresult = receiveData(pin_Lin,Llist)
 			if Lresult != -1:
 				id.value = Lresult
-				sendId(pin_Rout, Lresult) #右へIDを伝える
+				sendID(pin_Rout, Lresult) #右へIDを伝える
 				t_sta = time.perf_counter()
 			else: #一番左の時
 				time = time.perf_counter() - t_sta
 				if time > 5:
-					id.Value = 1
-					sendID(pin_Rout, id.Value)
+					id.value = 1
+					sendID(pin_Rout, id.value)
 		except KeyboardInterrupt:
 			GPIO.cleanup()
 			sys.exit()
