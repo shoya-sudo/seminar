@@ -104,7 +104,12 @@ def Rreceive():
 	while True:
 		try:
 			Rresult = receiveData(pin_Rin,Rlist)
-			if Rresult != -1:
+			if Rresult == 0: #右の接続が増えた時
+				sendID(pin_Rout, id.value) #id.value + 1の値を右に返す
+				Rid.value = id.value + 1
+				sendID(pin_Lout, Rid.value - 1) #増えた後の台数を左に流す
+				t_sta = time.perf_counter()
+			else if Rresult != -1:
 				Rid.value = Rresult
 				sendID(pin_Lout, Rresult - 1) #台数を左(Lout)へ流す(sendIDは+1されるので先に減らして渡す)
 				t_sta = time.perf_counter()
@@ -125,6 +130,8 @@ def Lreceive():
 			Lresult = receiveData(pin_Lin,Llist)
 			if Lresult != -1:
 				id.value = Lresult
+				if Rid.value == 1:
+					Rid.value = Lresult #単体から複数になった時用
 				sendID(pin_Rout, Lresult) #右へIDを伝える
 				t_sta = time.perf_counter()
 			else: #一番左の時
@@ -135,6 +142,9 @@ def Lreceive():
 		except KeyboardInterrupt:
 			GPIO.cleanup()
 			sys.exit()
+
+sendID(pin_Rout, 1) #右にidを流す
+sendID(pin_Lout, -1) #左にidを送らせる
 
 pool.submit(Rreceive) #プールにスレッドの関数を渡す
 pool.submit(Lreceive)
