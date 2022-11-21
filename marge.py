@@ -109,7 +109,7 @@ def Rreceive():
 				Rid.value = id.value + 1
 				sendID(pin_Lout, Rid.value - 1) #増えた後の台数を左に流す
 				t_sta = time.perf_counter()
-			else if Rresult != -1:
+			elif Rresult != -1:
 				Rid.value = Rresult
 				sendID(pin_Lout, Rresult - 1) #台数を左(Lout)へ流す(sendIDは+1されるので先に減らして渡す)
 				t_sta = time.perf_counter()
