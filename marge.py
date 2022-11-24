@@ -151,21 +151,21 @@ pool.submit(Lreceive)
 
 while True:
 	try:
-		if GPIO.input(las_in) == 0: #レーザーを遮ったとき
-			print("0")
+		if GPIO.input(las_in) == 1: #レーザーを遮ったとき
+			print("1")
 			if flag == 0: #前回の判定のときにレーザーが遮られていないとき鳴らす
 				if Rid.value == 1: #接続された台数が1台のとき(単体動作のとき)のファイル指定
 					tmp_file = piano + str(s_num) + wav
 				else: #複数のときのファイル指定
 					tmp_file = piano + str(id.value) + wav #wavファイルをidにて指定
-				#wav_obj = simpleaudio.WaveObject.from_wave_file(tmp_file)
-				#simpleaudio.stop_all()# 再生中の音源をすべて停止する
-				#wav_obj.play()
+				wav_obj = simpleaudio.WaveObject.from_wave_file(tmp_file)
+				simpleaudio.stop_all()# 再生中の音源をすべて停止する
+				wav_obj.play()
 			flag = 1 #これにより、今回鳴らしたことを次回以降で参照可能
 			if time_sta == 0:
 				time_sta = time.perf_counter()
 		else: #レーザーが照射されているとき
-			print("1")
+			print("0")
 			flag = 0 #遮ったら音がなる
 			if time_sta != 0:
 				time_end = time.perf_counter()
