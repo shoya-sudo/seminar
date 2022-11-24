@@ -28,8 +28,8 @@ GPIO.setup(las_in, GPIO.IN)
 
 #場合によっては入力ピンが浮いている状態を回避する必要がある
 #->プルアップ/プルダウン抵抗を指定する必要がある(浮いてるときにON/OFF)
-#GPIO.setup(las_in, GPIO.IN, pull_up_down = GPIO.PUD_UP)
-GPIO.setup(las_in, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+GPIO.setup(las_in, GPIO.IN, pull_up_down = GPIO.PUD_UP)
+#GPIO.setup(las_in, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
 
 def thread_test(): #スレッドの動作テスト用, 横通信のスレッドに置き換える箇所, スレッドプールの機能により、ここでのtime.sleepの長さでidの振り分け間隔を決めることが可能
     print("id.value: " + str(id.value) + " -> ",end='')
@@ -66,6 +66,7 @@ while True:
 					if s_num == 19:
 						s_num = 15
 			time_sta = 0
+		time.sleep(0.01)
 	except KeyboardInterrupt:
 		GPIO.cleanup()
 		sys.exit()

@@ -45,9 +45,10 @@ GPIO.setup(pin_Lin, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
 def receiveData(pin_in, list):
 	id = -1
 	count = 0
-	#print(pin_in)
+	print(pin_in)
 	#print(GPIO.input(pin_in))
 	list.append(GPIO.input(pin_in))
+	print("50")
 	while len(list) > 10:
 		list.pop(0)
 
@@ -68,30 +69,30 @@ def sendID(pin_out, id): #input id (1-15)
 	t=16
 	i=id
 	c=0
-	#print(id)
+	print(id)
 	print("send try")
 	try:
-		print("0")
+		#print("0")
 		GPIO.output(pin_out,False)
 		time.sleep(rate)
 		for num in range(5):
-			print("1")
+			#print("1")
 			GPIO.output(pin_out,True)
 			time.sleep(rate)
 		while i!=0:
 			c=c+1
 			if(i-t>=0):
-				print("1")
+				#print("1")
 				GPIO.output(pin_out,True)
 				i=i-t
 				time.sleep(rate)
 			else:
-				print("0")
+				#print("0")
 				GPIO.output(pin_out,False)
 				time.sleep(rate)
 			t=t/2
 		for num in range(6-c):
-			print("0")
+			#print("0")
 			GPIO.output(pin_out,False)
 			time.sleep(rate)
 	except KeyboardInterrupt:
@@ -104,20 +105,21 @@ def Rreceive():
 	while True:
 		try:
 			Rresult = receiveData(pin_Rin,Rlist)
-			if Rresult == 0: #右の接続が増えた時
-				sendID(pin_Rout, id.value) #id.value + 1の値を右に返す
+			print("Rreceive: " + Rresult)
+			if Rresult == 15: #右の接続が増えた時
+				sendID(pin_Rout, id.value + 1) #id.value + 1の値を右に返す
 				Rid.value = id.value + 1
-				sendID(pin_Lout, Rid.value - 1) #増えた後の台数を左に流す
+				sendID(pin_Lout, Rid.value) #増えた後の台数を左に流す
 				t_sta = time.perf_counter()
 			elif Rresult != -1:
 				Rid.value = Rresult
-				sendID(pin_Lout, Rresult - 1) #台数を左(Lout)へ流す(sendIDは+1されるので先に減らして渡す)
+				sendID(pin_Lout, Rresult) #台数を左(Lout)へ流す
 				t_sta = time.perf_counter()
 			else: #一番右の時
 				time = time.perf_counter() - t_sta
 				if time > 5:
 					Rid.value = id.value
-					sendID(pin_Lout, id.value - 1) #台数を左へ流す
+					sendID(pin_Lout, id.value) #台数を左へ流す
 		except KeyboardInterrupt:
 			GPIO.cleanup()
 			sys.exit()
@@ -127,45 +129,47 @@ def Lreceive():
 	time = 0
 	while True:
 		try:
+			print(pin_Lin)
 			Lresult = receiveData(pin_Lin,Llist)
+			print("Lreceive: " + Lresult)
 			if Lresult != -1:
 				id.value = Lresult
 				if Rid.value == 1:
 					Rid.value = Lresult #単体から複数になった時用
-				sendID(pin_Rout, Lresult) #右へIDを伝える
+				sendID(pin_Rout, Lresult + 1) #右へIDを伝える
 				t_sta = time.perf_counter()
 			else: #一番左の時
 				time = time.perf_counter() - t_sta
 				if time > 5:
 					id.value = 1
-					sendID(pin_Rout, id.value)
+					sendID(pin_Rout, id.value + 1)
 		except KeyboardInterrupt:
 			GPIO.cleanup()
 			sys.exit()
 
-sendID(pin_Rout, 1) #右にidを流す
-sendID(pin_Lout, -1) #左にidを送らせる
+sendID(pin_Rout, 2) #右にidを流す
+sendID(pin_Lout, 15) #左にidを送らせる
 
 pool.submit(Rreceive) #プールにスレッドの関数を渡す
 pool.submit(Lreceive)
 
 while True:
 	try:
-		if GPIO.input(las_in) == 0: #レーザーを遮ったとき
-			print("0")
+		if GPIO.input(las_in) == 1: #レーザーを遮ったとき
+			#print("1")
 			if flag == 0: #前回の判定のときにレーザーが遮られていないとき鳴らす
 				if Rid.value == 1: #接続された台数が1台のとき(単体動作のとき)のファイル指定
 					tmp_file = piano + str(s_num) + wav
 				else: #複数のときのファイル指定
 					tmp_file = piano + str(id.value) + wav #wavファイルをidにて指定
-				#wav_obj = simpleaudio.WaveObject.from_wave_file(tmp_file)
-				#simpleaudio.stop_all()# 再生中の音源をすべて停止する
-				#wav_obj.play()
+				wav_obj = simpleaudio.WaveObject.from_wave_file(tmp_file)
+				simpleaudio.stop_all()# 再生中の音源をすべて停止する
+				wav_obj.play()
 			flag = 1 #これにより、今回鳴らしたことを次回以降で参照可能
 			if time_sta == 0:
 				time_sta = time.perf_counter()
 		else: #レーザーが照射されているとき
-			print("1")
+			#print("0")
 			flag = 0 #遮ったら音がなる
 			if time_sta != 0:
 				time_end = time.perf_counter()
