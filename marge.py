@@ -50,7 +50,7 @@ def receiveData(pin_in, list):
 	id = -1
 	count = 0
 	list.append(GPIO.input(pin_in))
-	while len(list) > 10:
+	while len(list) > 12:
 		list.pop(0)
 
 	for i in list[1:]:
@@ -59,9 +59,9 @@ def receiveData(pin_in, list):
 		else:
 			break
 
-	if list[0] == 0 and count >= 4 and list[11] == 0 and len(list) >= 10:
-		id = list[8] + list[7] * 2 + list[6] * 4 + list[5] * 8
-
+	if list[0] == 0 and count >= 4 and list[11] == 0 and len(list) == 12:
+		id = list[10] + list[9] * 2 + list[8] * 4 + list[7] * 8
+	
 	time.sleep(rate)
 	return id #idを返す
 
@@ -71,6 +71,7 @@ def sendID(pin_out, id): #input id (1-15)
 	i=id
 	c=0
 	print("send try")
+	print(pin_out)
 	try:
 		GPIO.output(pin_out,False)
 		time.sleep(rate)
@@ -100,12 +101,15 @@ def Rreceive():
 		try:
 			Rresult = receiveData(pin_Rin,Rlist)
 			if Rresult == 15: #右の接続が増えた時
-				print("Rreceive: " + Rresult)
+				print("Rreceive: ")
+				print(Rreceive)
 				sendID(pin_Rout, id.value + 1) #id.value + 1の値を右に返す
 				Rid.value = id.value + 1
 				rcnt = 0
 				sendID(pin_Lout, Rid.value) #増えた後の台数を左に流す
 			elif Rresult != -1:
+				print("Rreceive: ")
+				print(Rreceive)
 				Rid.value = Rresult
 				sendID(pin_Lout, Rresult) #台数を左(Lout)へ流す
 				rcnt = 0
@@ -124,9 +128,9 @@ def Lreceive():
 	while True:
 		try:
 			Lresult = receiveData(pin_Lin,Llist)
+			#print(Lresult)
 			if Lresult != -1:
-				print("Lreceive: ")
-				print(Lresult)
+				print("send")
 				id.value = Lresult
 				if Rid.value == 1:
 					Rid.value = Lresult #単体から複数になった時用
@@ -139,6 +143,7 @@ def Lreceive():
 					sendID(pin_Rout, id.value + 1)
 			lcnt += 1
 		except KeyboardInterrupt:
+			print("inter")
 			GPIO.cleanup()
 			sys.exit()
 

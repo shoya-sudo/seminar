@@ -109,6 +109,7 @@ def Lrecive():
     while True:
         try:
             Lresult = receiveData(pin_Lin,Llist)
+            print(Lresult)
             if Lresult != -1:
                 Lid.value = Lresult
         except KeyboardInterrupt:
