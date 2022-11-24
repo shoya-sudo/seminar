@@ -22,6 +22,10 @@ pool = ProcessPoolExecutor(max_workers=2) #スレッドプールを1にするこ
 s_num = 15 #単体のときのファイル指定番号
 time_sta = 0
 time_end = 0
+t_lsta = 0
+t_rsta = 0
+ltime = 0
+rtime = 0
 tim = 0
 rate = 0.05
 Rlist = []
@@ -45,10 +49,7 @@ GPIO.setup(pin_Lin, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
 def receiveData(pin_in, list):
 	id = -1
 	count = 0
-	print(pin_in)
-	#print(GPIO.input(pin_in))
 	list.append(GPIO.input(pin_in))
-	print("50")
 	while len(list) > 10:
 		list.pop(0)
 
@@ -69,30 +70,24 @@ def sendID(pin_out, id): #input id (1-15)
 	t=16
 	i=id
 	c=0
-	print(id)
 	print("send try")
 	try:
-		#print("0")
 		GPIO.output(pin_out,False)
 		time.sleep(rate)
 		for num in range(5):
-			#print("1")
 			GPIO.output(pin_out,True)
 			time.sleep(rate)
 		while i!=0:
 			c=c+1
 			if(i-t>=0):
-				#print("1")
 				GPIO.output(pin_out,True)
 				i=i-t
 				time.sleep(rate)
 			else:
-				#print("0")
 				GPIO.output(pin_out,False)
 				time.sleep(rate)
 			t=t/2
 		for num in range(6-c):
-			#print("0")
 			GPIO.output(pin_out,False)
 			time.sleep(rate)
 	except KeyboardInterrupt:
@@ -100,49 +95,49 @@ def sendID(pin_out, id): #input id (1-15)
 		sys.exit()
 
 def Rreceive():
-	t_sta = time.perf_counter()
-	time = 0
+	rcnt = 0
 	while True:
 		try:
 			Rresult = receiveData(pin_Rin,Rlist)
-			print("Rreceive: " + Rresult)
 			if Rresult == 15: #右の接続が増えた時
+				print("Rreceive: " + Rresult)
 				sendID(pin_Rout, id.value + 1) #id.value + 1の値を右に返す
 				Rid.value = id.value + 1
+				rcnt = 0
 				sendID(pin_Lout, Rid.value) #増えた後の台数を左に流す
-				t_sta = time.perf_counter()
 			elif Rresult != -1:
 				Rid.value = Rresult
 				sendID(pin_Lout, Rresult) #台数を左(Lout)へ流す
-				t_sta = time.perf_counter()
+				rcnt = 0
 			else: #一番右の時
-				time = time.perf_counter() - t_sta
-				if time > 5:
+				if rcnt > 100:
 					Rid.value = id.value
+					rcnt = 0
 					sendID(pin_Lout, id.value) #台数を左へ流す
+			rcnt += 1
 		except KeyboardInterrupt:
 			GPIO.cleanup()
 			sys.exit()
 
 def Lreceive():
-	t_sta = time.perf_counter()
-	time = 0
+	lcnt = 0
 	while True:
 		try:
-			print(pin_Lin)
 			Lresult = receiveData(pin_Lin,Llist)
-			print("Lreceive: " + Lresult)
 			if Lresult != -1:
+				print("Lreceive: ")
+				print(Lresult)
 				id.value = Lresult
 				if Rid.value == 1:
 					Rid.value = Lresult #単体から複数になった時用
 				sendID(pin_Rout, Lresult + 1) #右へIDを伝える
-				t_sta = time.perf_counter()
+				lcnt = 0
 			else: #一番左の時
-				time = time.perf_counter() - t_sta
-				if time > 5:
+				if lcnt > 100:
 					id.value = 1
+					lcnt = 0
 					sendID(pin_Rout, id.value + 1)
+			lcnt += 1
 		except KeyboardInterrupt:
 			GPIO.cleanup()
 			sys.exit()
