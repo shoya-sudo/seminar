@@ -112,7 +112,7 @@ def Rreceive():
 				sendID(pin_Lout, Rresult) #台数を左(Lout)へ流す
 				rcnt = 0
 			else: #一番右の時
-				if rcnt > 100:
+				if rcnt > 200:
 					print("Rmax")
 					Rid.value = id.value
 					rcnt = 0
@@ -139,7 +139,7 @@ def Lreceive():
 				lcnt = 0
 				#print("R :", id.value)
 			else: #一番左の時
-				if lcnt > 100:
+				if lcnt > 200:
 					print("Lmax")
 					id.value = 1
 					lcnt = 0
