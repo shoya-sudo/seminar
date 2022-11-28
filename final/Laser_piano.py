@@ -17,7 +17,7 @@ id = Value('i', 1) #自分のid, 接続順により変化 スレッド内でも�
 Rid = Value('i', 1) #鍵盤数の情報を受け取る
 flag = 0 #レーザーを遮り続けたときに、音を鳴らし続けないように(レーザーを断続的に遮ったときのみ音がなる)
 pool = ProcessPoolExecutor(max_workers=2) #スレッドプールを1にすることで、while文に組み込んでも1つのスレッドまでしか動かない(2にして送信と受信両方のスレッドを動かすかも)
-s_num = 15 #単体のときのファイル指定番号
+s_num = 1 #単体のときのファイル指定番号
 time_sta = 0
 time_end = 0
 tim = 0
@@ -184,7 +184,7 @@ while True:
 					if s_num == 7:
 						s_num = 1
 			time_sta = 0
-		time.sleep(0.01)
+		time.sleep(0.05)
 	except KeyboardInterrupt:
 		GPIO.cleanup()
 		sys.exit()
