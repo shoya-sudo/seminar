@@ -157,7 +157,7 @@ pool.submit(Lreceive)
 
 while True:
 	try:
-		if GPIO.input(las_in) == 1: #レーザーを遮ったとき
+		if GPIO.input(las_in) == 0: #レーザーを遮ったとき
 			#print("1")
 			if flag == 0: #前回の判定のときにレーザーが遮られていないとき鳴らす
 				if Rid.value == 1: #接続された台数が1台のとき(単体動作のとき)のファイル指定
@@ -174,8 +174,8 @@ while True:
 			if time_sta == 0:
 				time_sta = time.perf_counter()
 		else: #レーザーが照射されているとき
-			#print("0")
-			flag = 0 #遮ったら音がなる
+			#print("1")
+			flag = 1 #遮ったら音がなる
 			if time_sta != 0:
 				time_end = time.perf_counter()
 				tim = time_end - time_sta
