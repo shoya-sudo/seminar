@@ -170,7 +170,7 @@ while True:
 				wav_obj = simpleaudio.WaveObject.from_wave_file(tmp_file)
 				simpleaudio.stop_all()# 再生中の音源をすべて停止する
 				wav_obj.play()
-			flag = 0 #これにより、今回鳴らしたことを次回以降で参照可能
+			flag = 1 #これにより、今回鳴らしたことを次回以降で参照可能
 			if time_sta == 0:
 				time_sta = time.perf_counter()
 		else: #レーザーが照射されているとき
