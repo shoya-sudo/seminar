@@ -38,8 +38,8 @@ GPIO.setup(pin_Lout, GPIO.OUT)
 
 #場合によっては入力ピンが浮いている状態を回避する必要がある
 #->プルアップ/プルダウン抵抗を指定する必要がある(浮いてるときにON/OFF)
-GPIO.setup(las_in, GPIO.IN, pull_up_down = GPIO.PUD_UP)
-#GPIO.setup(las_in, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+#GPIO.setup(las_in, GPIO.IN, pull_up_down = GPIO.PUD_UP)
+GPIO.setup(las_in, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
 GPIO.setup(pin_Rin, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
 GPIO.setup(pin_Lin, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
 
