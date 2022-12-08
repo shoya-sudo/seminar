@@ -1,0 +1,10 @@
+[Unit]
+Description=Do test
+After=cd Desktop/seminar/final
+
+[Service]
+ExecStart=python3 /home/semi20rd030/Desktop/seminar/final/Laser_piano.py
+User=semi20rd030
+
+[Install]
+WantedBy=multi-user.target
