@@ -162,20 +162,21 @@ while True:
 			if flag == 0: #前回の判定のときにレーザーが遮られていないとき鳴らす
 				if Rid.value == 1: #接続された台数が1台のとき(単体動作のとき)のファイル指定
 					if s_num == 6:
-						tmp_file = "monotony/" + fileName_mono[s_num - 1 + random.randrange(3)] + ".wav"
+						tmp_file = "/home/semi20rd030/Desktop/seminar/final/monotony/" + fileName_mono[s_num - 1 + random.randrange(3)] + ".wav"
 					else:
-						tmp_file = "monotony/" + fileName_mono[s_num - 1] + ".wav"
+						tmp_file = "/home/semi20rd030/Desktop/seminar/final/monotony/" + fileName_mono[s_num - 1] + ".wav"
 				else: #複数のときのファイル指定
-					tmp_file = "piano/" + fileName[id.value - 1] + ".wav" #wavファイルをidにて指定
+					tmp_file = "/home/semi20rd030/Desktop/seminar/final/piano/" + fileName[id.value - 1] + ".wav" #wavファイルをidにて指定
 				wav_obj = simpleaudio.WaveObject.from_wave_file(tmp_file)
 				simpleaudio.stop_all()# 再生中の音源をすべて停止する
 				wav_obj.play()
-			flag = 1 #これにより、今回鳴らしたことを次回以降で参照可能
+				print(tmp_file)
+			flag = 0 #これにより、今回鳴らしたことを次回以降で参照可能
 			if time_sta == 0:
 				time_sta = time.perf_counter()
 		else: #レーザーが照射されているとき
 			#print("0")
-			flag = 1 #遮ったら音がなる
+			flag = 0 #遮ったら音がなる
 			if time_sta != 0:
 				time_end = time.perf_counter()
 				tim = time_end - time_sta
