@@ -27,6 +27,8 @@ Llist = []
 
 #ID to filename
 fileName = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B","B#"]
+major_scale= ["C","D","E","F","G","A","B","B#"]
+miyakobushi = ["C","C#","F","G","G#","B#"]
 fileName_mono = ["tsuzumi","wadaiko","piano_mono","bell","ou_man","sword1","sword2","sword3","sword4"]
 
 GPIO.setmode(GPIO.BOARD)
@@ -97,25 +99,34 @@ def sendID(pin_out, id): #input id (1-15)
 
 def Rreceive():
 	rcnt = 0
+	tmp = 0
+	check = 0
+	Rresult = -1
 	while True:
 		try:
+			tmp = Rresult
 			Rresult = receiveData(pin_Rin,Rlist)
 			if Rresult == 15: #右の接続が増えた時
 				sendID(pin_Rout, id.value + 1) #id.value + 1の値を右に返す
 				Rid.value = id.value + 1
 				rcnt = 0
+				check = 0
 				sendID(pin_Lout, Rid.value) #増えた後の台数を左に流す
 			elif Rresult != -1:
-				#print("Rreceive: ")
-				#print(Rresult)
-				Rid.value = Rresult
-				sendID(pin_Lout, Rresult) #台数を左(Lout)へ流す
+				if tmp == Rresult:
+					Rid.value = Rresult
+				sendID(pin_Lout, Rid.value) #台数を左(Lout)へ流す
 				rcnt = 0
-			else: #一番右の時
-				if rcnt > 200:
+				check = 0
+			else: #-1の時
+				if rcnt > 20 and check == 0: #再送
+					sendID(pin_Lout, Rid.value)
+					check = 1
+				elif rcnt > 40: #一番右の時
 					print("Rmax")
 					Rid.value = id.value
 					rcnt = 0
+					check = 0
 					sendID(pin_Lout, id.value) #台数を左へ流す
 			rcnt += 1
 		except KeyboardInterrupt:
@@ -124,25 +135,30 @@ def Rreceive():
 
 def Lreceive():
 	lcnt = 0
+	tmp = 0
+	check = 0
+	Lresult = -1
 	while True:
 		try:
+			tmp = Lresult
 			Lresult = receiveData(pin_Lin,Llist)
-			#print("Lreceive ", Lresult)
 			if Lresult != -1:
-				#print("Lreceive ", Lresult)
-				#print("send")
-				id.value = Lresult
+				if tmp == Lresult:
+					id.value = Lresult
 				if Rid.value == 1:
 					Rid.value = Lresult #単体から複数になった時用
-					#print("Rid ", Rid.value)
-				sendID(pin_Rout, Lresult + 1) #右へIDを伝える
+				sendID(pin_Rout, id.value + 1) #右へIDを伝える
 				lcnt = 0
-				#print("R :", id.value)
-			else: #一番左の時
-				if lcnt > 200:
+				check =0
+			else: #-1の時
+				if lcnt > 20 and check == 0: #再送
+					sendID(pin_Rout, id.value + 1)
+					check = 1
+				elif lcnt > 40: #一番左の時
 					print("Lmax")
 					id.value = 1
 					lcnt = 0
+					check = 0
 					sendID(pin_Rout, id.value + 1)
 			lcnt += 1
 		except KeyboardInterrupt:
@@ -165,13 +181,16 @@ while True:
 						tmp_file = "/home/semi20rd030/Desktop/seminar/final/monotony/" + fileName_mono[s_num - 1 + random.randrange(3)] + ".wav"
 					else:
 						tmp_file = "/home/semi20rd030/Desktop/seminar/final/monotony/" + fileName_mono[s_num - 1] + ".wav"
+				elif Rid.value == 8:#接続された台数が8台のときはメジャースケール
+					tmp_file = "/home/semi20rd030/Desktop/seminar/final/piano/" + major_scale[id.value - 1] + ".wav"
+				elif Rid.value == 6:#接続された台数が6台のときは都節音階
+					tmp_file = "/home/semi20rd030/Desktop/seminar/final/piano/" + miyakobushi[id.value - 1] + ".wav" 
 				else: #複数のときのファイル指定
 					tmp_file = "/home/semi20rd030/Desktop/seminar/final/piano/" + fileName[id.value - 1] + ".wav" #wavファイルをidにて指定
 				wav_obj = simpleaudio.WaveObject.from_wave_file(tmp_file)
 				simpleaudio.stop_all()# 再生中の音源をすべて停止する
 				wav_obj.play()
-				print(tmp_file)
-			flag = 0 #これにより、今回鳴らしたことを次回以降で参照可能
+			flag = 1 #これにより、今回鳴らしたことを次回以降で参照可能
 			if time_sta == 0:
 				time_sta = time.perf_counter()
 		else: #レーザーが照射されているとき
