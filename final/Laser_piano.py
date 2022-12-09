@@ -29,7 +29,7 @@ Llist = []
 fileName = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B","B#"]
 major_scale= ["C","D","E","F","G","A","B","B#"]
 miyakobushi = ["C","C#","F","G","G#","B#"]
-fileName_mono = ["tsuzumi","wadaiko","piano_mono","bell","ou_man","sword1","sword2","sword3","sword4"]
+fileName_mono = ["tsuzumi","piano_mono","bell","ou_man","sword1","sword2","sword3","sword4"]
 
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(las_in, GPIO.IN)
@@ -119,10 +119,10 @@ def Rreceive():
 				rcnt = 0
 				check = 0
 			else: #-1の時
-				if rcnt > 20 and check == 0: #再送
+				if rcnt > 40 and check == 0: #再送
 					sendID(pin_Lout, Rid.value)
 					check = 1
-				elif rcnt > 40: #一番右の時
+				elif rcnt > 80: #一番右の時
 					print("Rmax")
 					Rid.value = id.value
 					rcnt = 0
@@ -151,10 +151,10 @@ def Lreceive():
 				lcnt = 0
 				check =0
 			else: #-1の時
-				if lcnt > 20 and check == 0: #再送
+				if lcnt > 40 and check == 0: #再送
 					sendID(pin_Rout, id.value + 1)
 					check = 1
-				elif lcnt > 40: #一番左の時
+				elif lcnt > 80: #一番左の時
 					print("Lmax")
 					id.value = 1
 					lcnt = 0
@@ -174,7 +174,7 @@ pool.submit(Lreceive)
 while True:
 	try:
 		if GPIO.input(las_in) == 0: #レーザーを遮ったとき
-			#print("1")
+			print("1")
 			if flag == 0: #前回の判定のときにレーザーが遮られていないとき鳴らす
 				if Rid.value == 1: #接続された台数が1台のとき(単体動作のとき)のファイル指定
 					if s_num == 6:
@@ -194,7 +194,7 @@ while True:
 			if time_sta == 0:
 				time_sta = time.perf_counter()
 		else: #レーザーが照射されているとき
-			#print("0")
+			print("0")
 			flag = 0 #遮ったら音がなる
 			if time_sta != 0:
 				time_end = time.perf_counter()
