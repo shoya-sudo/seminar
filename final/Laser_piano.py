@@ -104,7 +104,6 @@ def Rreceive():
 	Rresult = -1
 	while True:
 		try:
-			tmp = Rresult
 			Rresult = receiveData(pin_Rin,Rlist)
 			if Rresult == 15: #右の接続が増えた時
 				sendID(pin_Rout, id.value + 1) #id.value + 1の値を右に返す
@@ -116,6 +115,7 @@ def Rreceive():
 				if tmp == Rresult:
 					Rid.value = Rresult
 				sendID(pin_Lout, Rid.value) #台数を左(Lout)へ流す
+				tmp = Rresult
 				rcnt = 0
 				check = 0
 			else: #-1の時
@@ -140,7 +140,6 @@ def Lreceive():
 	Lresult = -1
 	while True:
 		try:
-			tmp = Lresult
 			Lresult = receiveData(pin_Lin,Llist)
 			if Lresult != -1:
 				if tmp == Lresult:
@@ -148,6 +147,7 @@ def Lreceive():
 				if Rid.value == 1:
 					Rid.value = Lresult #単体から複数になった時用
 				sendID(pin_Rout, id.value + 1) #右へIDを伝える
+				tmp = Lresult
 				lcnt = 0
 				check =0
 			else: #-1の時
