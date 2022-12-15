@@ -119,10 +119,10 @@ def Rreceive():
 				rcnt = 0
 				check = 0
 			else: #-1の時
-				if rcnt > 40 and check == 0: #再送
+				if rcnt > 100 and check == 0: #再送
 					sendID(pin_Lout, Rid.value)
 					check = 1
-				elif rcnt > 80: #一番右の時
+				elif rcnt > 200: #一番右の時
 					print("Rmax")
 					Rid.value = id.value
 					rcnt = 0
@@ -151,10 +151,10 @@ def Lreceive():
 				lcnt = 0
 				check =0
 			else: #-1の時
-				if lcnt > 40 and check == 0: #再送
+				if lcnt > 100 and check == 0: #再送
 					sendID(pin_Rout, id.value + 1)
 					check = 1
-				elif lcnt > 80: #一番左の時
+				elif lcnt > 200: #一番左の時
 					print("Lmax")
 					id.value = 1
 					lcnt = 0
