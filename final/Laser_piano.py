@@ -177,7 +177,7 @@ while True:
 			print("1")
 			if flag == 0: #前回の判定のときにレーザーが遮られていないとき鳴らす
 				if Rid.value == 1: #接続された台数が1台のとき(単体動作のとき)のファイル指定
-					if s_num == 6:
+					if s_num == 5:
 						tmp_file = "/home/semi20rd030/Desktop/seminar/final/monotony/" + fileName_mono[s_num - 1 + random.randrange(3)] + ".wav"
 					else:
 						tmp_file = "/home/semi20rd030/Desktop/seminar/final/monotony/" + fileName_mono[s_num - 1] + ".wav"
@@ -201,7 +201,7 @@ while True:
 				tim = time_end - time_sta
 				if tim > 3:
 					s_num += 1
-					if s_num == 7:
+					if s_num == 6:
 						s_num = 1
 			time_sta = 0
 		time.sleep(0.05)
